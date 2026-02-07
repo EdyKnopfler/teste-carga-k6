@@ -71,6 +71,13 @@ func connectDB() (*gorm.DB, *sql.DB) {
 		log.Fatal("failed to get underlying sql.DB", err)
 	}
 
+	// OTIMIZADO: pool de conexões
+	// Ponto ideal para os recursos finitos do container
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+	monitorarPool(sqlDB)
+
 	return gormDB, sqlDB
 }
 
@@ -110,4 +117,21 @@ func setupGracefulShutdown(server *http.Server) {
 	}
 
 	<-ctx.Done()
+}
+
+func monitorarPool(sqlDB *sql.DB) {
+	go func() {
+		for {
+			stats := sqlDB.Stats()
+
+			log.Printf("📊 [Pool Stats] Abertas: %d | Em Uso: %d | Ociosas: %d | Esperando: %d",
+				stats.OpenConnections,
+				stats.InUse,
+				stats.Idle,
+				stats.WaitCount, // Total de requisições que tiveram que esperar por uma conexão (O MAIS IMPORTANTE!)
+			)
+
+			time.Sleep(5 * time.Second)
+		}
+	}()
 }
