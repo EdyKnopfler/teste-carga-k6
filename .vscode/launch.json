@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "name": "Go debug",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${fileDirname}",
+      "env": {
+          "POSTGRES_PASSWORD": "tanto_faz_so_pra_dev",
+          "POSTGRES_USER": "postgres",
+          "POSTGRES_DB": "postgres_db",
+          "POSTGRES_HOST": "localhost",
+          "POSTGRES_PORT": "5432"
+      },
+    }
+  ]
+}

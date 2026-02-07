@@ -1,0 +1,52 @@
+services:
+
+  app:
+    build: ./app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - rede-interna
+    environment:
+      POSTGRES_PASSWORD: tanto_faz_so_pra_dev
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres_db
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '256M'
+
+  db:
+    image: postgres:18.1-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: tanto_faz_so_pra_dev
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres_db
+    ports:
+      - "5432:5432"
+    networks:
+      - rede-interna
+    volumes:
+      - ./pgdata:/var/lib/postgresql/18/docker
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '512M'
+
+  k6:
+    build: ./stress-test
+    depends_on:
+      - app
+    profiles: ["tools"]
+
+networks:
+  rede-interna:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: "br-performance"

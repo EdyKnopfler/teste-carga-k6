@@ -1,0 +1,4 @@
+pgdata/
+gopkg/
+**/__debug*
+app/main

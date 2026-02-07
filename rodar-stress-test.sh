@@ -1,0 +1,1 @@
+docker compose run --rm -it k6 run /scripts/teste-performance.js
