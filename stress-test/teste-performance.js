@@ -20,6 +20,7 @@ export default function() {
       dataNascimento: '1990-01-01',
       preferencias: ['Go', 'Docker', 'Performance']
     });
+    
     let params = { headers: { 'Content-Type': 'application/json' } };
     let res = http.post(`${BASE_URL}/amigos`, payload, params);
     check(res, { 'cadastro ok': (r) => r.status === 201 });

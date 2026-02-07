@@ -4,6 +4,7 @@ package amigos
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -51,13 +52,12 @@ func (cadastro *cadastroAmigos) inserir(c *gin.Context) {
 	novoAmigo := Amigo{
 		Nome:           dto.Nome,
 		DataNascimento: dataNasc,
+		// OTIMIZADO: pré-alocação do espaço evita realocações, GC, ...
+		Preferencias: make([]Preferencia, len(dto.Preferencias)),
 	}
 
-	// Já sei quantas preferências há! Posso pré-alocar.
-	for _, p := range dto.Preferencias {
-		novoAmigo.Preferencias = append(novoAmigo.Preferencias, Preferencia{
-			Nome: p,
-		})
+	for i := range dto.Preferencias {
+		novoAmigo.Preferencias[i].Nome = dto.Preferencias[i]
 	}
 
 	// Peso do ORM
@@ -77,33 +77,40 @@ func (cadastro *cadastroAmigos) buscar(c *gin.Context) {
 		return
 	}
 
+	paginasStr := c.DefaultQuery("p", "1")
+	paginas, err := strconv.Atoi(paginasStr)
+
+	if err != nil || paginas < 1 {
+		paginas = 1
+	}
+
+	const limite = 20
+	offset := (paginas - 1) * limite
+
 	var amigos []Amigo
 
-	// A parte que vai ficar "feia" no teste de carga
+	// OTIMIZADO: criado índice trigrama GIN
 	searchQuery := "%" + termo + "%"
 
-	// Preload pode gerar um IDAmigo IN (...) bem longo
-	// Nada de paginação
-	if err := cadastro.DB.Preload("Preferencias").Where("nome ILIKE ?", searchQuery).Find(&amigos).Error; err != nil {
-		c.JSON(500, gin.H{"error": "Erro ao realizar busca: " + err.Error()})
+	// OTIMIZADO: limite e paginação
+	result := cadastro.DB.
+		Limit(limite).
+		Preload("Preferencias").
+		Offset(offset).
+		Where("nome ILIKE ?", searchQuery).
+		Find(&amigos)
+
+	if result.Error != nil {
+		c.JSON(500, gin.H{"error": "Erro ao realizar busca: " + result.Error.Error()})
 		return
 	}
 
-	// Outra coisa que pode atrapalhar:
-	amigosDTO := make([]AmigoDTO, 0)
+	// OTIMIZADO: pré-alocação do espaço evita realocações, GC, ...
+	amigosDTO := make([]AmigoDTO, len(amigos))
 
-	for _, amigo := range amigos {
-		amigosDTO = append(amigosDTO, mapToDTO(amigo))
+	for i := range amigos {
+		amigosDTO[i] = mapToDTO(amigos[i])
 	}
-
-	/*
-		// Mais eficiente: evita realocações, GC, ...
-		amigosDTO := make([]AmigoDTO, len(amigos))
-
-		for i := range amigos {
-			amigosDTO[i] = mapToDTO(amigos[i])
-		}
-	*/
 
 	c.JSON(200, amigosDTO)
 }

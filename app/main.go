@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func main() {
@@ -33,9 +34,32 @@ func connectDB() (*gorm.DB, *sql.DB) {
 
 	dsn := "host=" + host + " user=" + user + " password=" + password + " dbname=" + dbname + " port=" + port
 
-	fmt.Println("Conectando " + dsn)
+	logLevel := logger.Silent
+	envLevel := os.Getenv("DB_LOG_LEVEL")
 
-	gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	switch envLevel {
+	case "silent":
+		logLevel = logger.Silent
+	case "error":
+		logLevel = logger.Error
+	case "warn":
+		logLevel = logger.Warn
+	case "info":
+		logLevel = logger.Info
+	}
+
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags),
+		logger.Config{
+			SlowThreshold: 200 * time.Millisecond,
+			LogLevel:      logLevel,
+			Colorful:      true,
+		},
+	)
+
+	gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: newLogger,
+	})
 
 	if err != nil {
 		log.Fatal("failed to connect database:", err)

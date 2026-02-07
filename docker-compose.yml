@@ -9,6 +9,8 @@ services:
     networks:
       - rede-interna
     environment:
+      GIN_MODE: release
+      DB_LOG_LEVEL: warn
       POSTGRES_PASSWORD: tanto_faz_so_pra_dev
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres_db
