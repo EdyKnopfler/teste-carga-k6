@@ -6,7 +6,7 @@
 Restritos no `docker-compose.yml`:
 
 * 0.5 CPU + 256MB RAM para aplicação web
-* 0.5 CPU + 517MB RAM para banco de dados
+* 0.5 CPU + 512MB RAM para banco de dados
 
 ## 2. Tags
 
