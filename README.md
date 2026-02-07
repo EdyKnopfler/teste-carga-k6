@@ -28,11 +28,11 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE INDEX idx_amigos_nome_trgm ON amigos USING gin (nome gin_trgm_ops);
 ```
 
-# 3.1.2 Paginação nas consultas
+#### 3.1.2 Paginação nas consultas
 
 A primeira versão aceitava qualquer busca textual e devolvia todas as linhas encontradas.
 
-# 3.1.3 Evitando alocação dinâmica de memória
+#### 3.1.3 Evitando alocação dinâmica de memória
 
 Quando já sabemos quantos elementos há no DTO, podemos alocar antecipadamente no objeto entidade (e vice-versa). Evitamos realocação dinâmica por `append` executado em loop, que num cenário de estresse pode forçar o Garbage Collector.
 
