@@ -10,7 +10,7 @@ export const options = {
   ],
 };
 
-const BASE_URL = 'http://host.docker.internal:8080';
+const BASE_URL = 'http://app:8080';
 
 export default function() {
   // 1. Simula Cadastro (Escrita) - 20% das vezes
