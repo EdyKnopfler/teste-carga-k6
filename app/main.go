@@ -124,7 +124,7 @@ func monitorarPool(sqlDB *sql.DB) {
 		for {
 			stats := sqlDB.Stats()
 
-			log.Printf("📊 [Pool Stats] Abertas: %d | Em Uso: %d | Ociosas: %d | Esperando: %d",
+			log.Printf("[Pool Stats] Abertas: %d | Em Uso: %d | Ociosas: %d | Esperando: %d",
 				stats.OpenConnections,
 				stats.InUse,
 				stats.Idle,

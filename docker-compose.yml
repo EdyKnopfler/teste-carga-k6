@@ -38,13 +38,15 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: '1.0'
           memory: '512M'
 
   k6:
     build: ./stress-test
     depends_on:
       - app
+    networks:
+      - rede-interna
     profiles: ["tools"]
 
 networks:
